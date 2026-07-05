@@ -3,3 +3,4 @@
 ไขปริศนา DPC Latency: วิเคราะห์และแก้ไขอาการกระตุกเพื่อเฟรมเรตที่เสถียรที่สุด
 ถอดรหัส Windows Services: จัดการ Dependencies และ Trigger-Start เพื่อประสิทธิภาพสูงสุดและลดภาระระบบอย่างปลอดภัย
 เปิดเผยความลับ System Timer: จูนความละเอียดนาฬิการะบบเพื่อลด Input Lag และ Frame Time Jitter
+ไขความลับ Virtual Memory: ปรับแต่ง Pagefile และ Memory Compression เพื่อการจัดการ RAM ขั้นสูงสำหรับเกมเมอร์
