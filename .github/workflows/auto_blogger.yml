@@ -5,6 +5,7 @@ on:
   # 1. รันทุกครั้งที่คุณ Push โค้ดแก้ไขจากคอมพิวเตอร์ของคุณเอง
   push:
     branches:
+      - main
       - master
 
   # 2. รันอัตโนมัติทุกวันเวลา 01:00 UTC (08:00 น. เวลาไทย)
@@ -70,7 +71,7 @@ jobs:
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add .
             git commit -m "Feat: auto-generate post by AI (GitHub Actions Scheduler)"
-            git push origin master
+            git push origin HEAD
           else
             echo "No changes detected. Skipping commit."
           fi
