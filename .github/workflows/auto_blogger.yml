@@ -2,11 +2,16 @@
 name: Auto Generate Blog Post & Deploy
 
 on:
+  # 1. รันทุกครั้งที่คุณ Push โค้ดแก้ไขจากคอมพิวเตอร์ของคุณเอง
+  push:
+    branches:
+      - master
+
+  # 2. รันอัตโนมัติทุกวันเวลา 01:00 UTC (08:00 น. เวลาไทย)
   schedule:
-    # รันทุกวันเวลา 01:00 UTC (08:00 น. เวลาไทย)
     - cron: '0 1 * * *'
   
-  # สั่งรันแมนนวลจากแท็บ Actions บนหน้าเว็บ
+  # 3. สั่งรันแมนนวลจากแท็บ Actions บนหน้าเว็บ
   workflow_dispatch:
 
 permissions:
@@ -32,28 +37,32 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      # 2. ตั้งค่า Python
+      # 2. ตั้งค่า Python (รันเฉพาะเมื่อถึงรอบเวลาเขียนบทความ หรือกดสั่งเอง)
       - name: Setup Python
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
 
-      # 3. ติดตั้ง Python dependencies
+      # 3. ติดตั้ง Python dependencies (รันเฉพาะเมื่อถึงรอบเวลาเขียนบทความ หรือกดสั่งเอง)
       - name: Install Python Dependencies
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4. รันสคริปต์เขียนบทความอัตโนมัติ
+      # 4. รันสคริปต์เขียนบทความอัตโนมัติ (รันเฉพาะเมื่อถึงรอบเวลาเขียนบทความ หรือกดสั่งเอง)
       - name: Run Auto Blogger Script
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python auto_blogger.py
 
-      # 5. Commit และ Push บทความใหม่กลับเข้าคลังเก็บโค้ด
+      # 5. Commit และ Push บทความใหม่กลับเข้าคลังเก็บโค้ด (รันเฉพาะเมื่อถึงรอบเวลาเขียนบทความ หรือกดสั่งเอง)
       - name: Commit and Push changes
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             echo "New article detected. Preparing to commit..."
@@ -66,18 +75,18 @@ jobs:
             echo "No changes detected. Skipping commit."
           fi
 
-      # 6. ติดตั้ง Hugo CLI
+      # 6. ติดตั้ง Hugo CLI (รันเสมอ เพื่อเตรียมบิลด์หน้าเว็บจริง)
       - name: Install Hugo CLI
         run: |
           wget -O ${{ runner.temp }}/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${{ env.HUGO_VERSION }}/hugo_extended_${{ env.HUGO_VERSION }}_linux-amd64.deb
           sudo dpkg -i ${{ runner.temp }}/hugo.deb
 
-      # 7. ตั้งค่าระบบ Pages
+      # 7. ตั้งค่าระบบ Pages (รันเสมอ)
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
 
-      # 8. บิลด์หน้าเว็บด้วย Hugo
+      # 8. บิลด์หน้าเว็บด้วย Hugo (รันเสมอ)
       - name: Build with Hugo
         env:
           HUGO_CACHEDIR: ${{ runner.temp }}/hugo_cache
@@ -88,13 +97,13 @@ jobs:
             --minify \
             --baseURL "${{ steps.pages.outputs.base_url }}/"
 
-      # 9. อัปโหลดผลลัพธ์การบิลด์ขึ้นไปเตรียมดีพลอย
+      # 9. อัปโหลดผลลัพธ์การบิลด์ขึ้นไปเตรียมดีพลอย (รันเสมอ)
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
 
-  # ขั้นตอนสุดท้าย: ส่งไฟล์ขึ้นคลาวด์ออนไลน์จริง
+  # ขั้นตอนสุดท้าย: ส่งไฟล์ขึ้นคลาวด์ออนไลน์จริง (รันเสมอ)
   deploy:
     environment:
       name: github-pages
