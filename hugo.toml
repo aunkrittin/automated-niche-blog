@@ -1,0 +1,65 @@
+baseURL = 'http://10.0.0.11:1313/'
+languageCode = 'th-th'
+title = 'Antigravity AutoTech Blog'
+theme = 'PaperMod'
+
+[params]
+    env = "development"
+    title = "Antigravity AutoTech Lab"
+    description = "บล็อกเจาะลึกเทคโนโลยี การปรับแต่งระบบ และการอัปเดตบทความด้วยระบบอัตโนมัติ 100%"
+    author = "Automation Engineer & AI Developer"
+    
+    # ธีมและการแสดงผล
+    defaultTheme = "dark" # เริ่มต้นด้วย Dark Mode พรีเมียม
+    disableThemeToggle = false
+    ShowShareButtons = true
+    ShowReadingTime = true
+    ShowPostNavLinks = true
+    ShowBreadCrumbs = true
+    ShowCodeCopyButtons = true
+    ShowToc = true
+    
+    # โหมดโปรไฟล์ที่หน้าแรก (ดูหรูหราทันทีเมื่อเปิดมา)
+    [params.profileMode]
+        enabled = true
+        title = "Antigravity TechLab 🚀"
+        subtitle = "ยินดีต้อนรับสู่บล็อกเจาะลึกด้าน System Architecture, Windows Optimization และ Network Lag Reduction บันทึกและวิเคราะห์อัตโนมัติโดย Gemini AI"
+        imageUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&q=80"
+        imageWidth = 120
+        imageHeight = 120
+        [[params.profileMode.buttons]]
+            name = "บทความทั้งหมด 📚"
+            url = "posts/"
+        [[params.profileMode.buttons]]
+            name = "GitHub Profile 🛠️"
+            url = "https://github.com/aunkrittin"
+            
+    # ปุ่มโซเชียลมีเดียในหน้าโปรไฟล์
+    [[params.socialIcons]]
+        name = "github"
+        url = "https://github.com/aunkrittin"
+    [[params.socialIcons]]
+        name = "email"
+        url = "mailto:krittin.ch2543@gmail.com"
+
+# เมนูนำทางด้านบน
+[[menu.main]]
+    name = "หน้าหลัก 🏠"
+    url = "/"
+    weight = 10
+[[menu.main]]
+    name = "บทความทั้งหมด 📚"
+    url = "/posts/"
+    weight = 20
+[[menu.main]]
+    name = "แท็ก 🏷️"
+    url = "/tags/"
+    weight = 30
+[[menu.main]]
+    name = "ค้นหา 🔍"
+    url = "/search/"
+    weight = 40
+
+# ตั้งค่า Output Formats สำหรับสร้างไฟล์ JSON เพื่อใช้ในระบบค้นหา (Search)
+[outputs]
+    home = ["HTML", "RSS", "JSON"]
