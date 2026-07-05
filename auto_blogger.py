@@ -24,7 +24,7 @@ genai.configure(api_key=API_KEY)
 TOPICS_FILE = "topics.txt"
 DONE_TOPICS_FILE = "topics_done.txt"
 
-model = genai.GenerativeModel('gemini-2.5-flash')
+model = genai.GenerativeModel('gemini-3.5-flash')
 
 # 1. จัดการเรื่องหัวข้อบทความ (Queue & Auto-Pilot)
 topic = ""
