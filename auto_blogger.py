@@ -1,61 +1,80 @@
+#!/usr/bin/env python3
+"""
+Antigravity TechLab - Auto Blogger Engine
+Engine for generating niche technical blog posts using Gemini 3.5 Flash and Hugo.
+Author: Automation Engineer & AI Developer
+"""
+
 import os
 import datetime
 import google.generativeai as genai
 from git import Repo
 
-# ตั้งค่า API Key (ดึงจาก Environment Variable เพื่อความปลอดภัย)
-API_KEY = os.environ.get("GEMINI_API_KEY", "")
-if not API_KEY or API_KEY == "YOUR_API_KEY_HERE":
-    # ลองหาคีย์จากตัวแปร GOOGLE_API_KEY เผื่อไว้
-    API_KEY = os.environ.get("GOOGLE_API_KEY", "")
-
-# ตรวจสอบความถูกต้องของ API Key และให้คำแนะนำการแก้ไข
-if not API_KEY:
-    print("==================================================================")
-    print("❌ ERROR: ไม่พบ API Key ของ Gemini ในระบบ!")
-    print("กรุณาตรวจสอบว่าคุณได้สร้าง 'Repository Secret' ชื่อ 'GEMINI_API_KEY'")
-    print("ในแท็บ Settings ของ GitHub เรียบร้อยแล้ว")
-    print("==================================================================")
-    exit(1)
-
-genai.configure(api_key=API_KEY)
-
-# ไฟล์ระบบ Content Plan
+# System configurations
 TOPICS_FILE = "topics.txt"
 DONE_TOPICS_FILE = "topics_done.txt"
 
-model = genai.GenerativeModel('gemini-3.5-flash')
 
-# 1. จัดการเรื่องหัวข้อบทความ (Queue & Auto-Pilot)
-topic = ""
-remaining_topics = []
+def log_banner(message: str):
+    """Print a styled banner for console visibility."""
+    border = "=" * len(message)
+    print(f"\n{border}")
+    print(message)
+    print(f"{border}\n")
 
-# อ่านคิวหัวข้อจากไฟล์ (หากมี)
-if os.path.exists(TOPICS_FILE):
-    with open(TOPICS_FILE, "r", encoding="utf-8") as f:
-        topics = [line.strip() for line in f if line.strip()]
-else:
-    topics = []
 
-if topics:
-    # โหมดกำหนดเอง: มีคิวหัวข้ออยู่ ให้หยิบหัวข้อแรกมาทำ
-    topic = topics[0]
-    remaining_topics = topics[1:]
-    print(f"Mode: Manual Queue -> Picked topic: '{topic}'")
-else:
-    # โหมด Auto-Pilot: ไม่มีคิวในไฟล์ ให้ Gemini คิดหัวข้อใหม่ที่สอดคล้องกับแนวบล็อกเอง!
-    print("Mode: Auto-Pilot -> Topics file is empty or not found. Gemini will generate a new topic.")
-    
-    # อ่านหัวข้อที่เคยเขียนไปแล้วเพื่อหลีกเลี่ยงการเขียนหัวข้อซ้ำ
+def load_api_key() -> str:
+    """
+    Safely load and validate the Gemini API Key from environment variables.
+    Exits the process with clear instructions if keys are missing.
+    """
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not api_key or api_key == "YOUR_API_KEY_HERE":
+        api_key = os.environ.get("GOOGLE_API_KEY", "")
+        
+    if not api_key:
+        print("==================================================================")
+        print("❌ ERROR: Gemini API Key not found in system environment!")
+        print("Please verify you have added 'GEMINI_API_KEY' to Repository Secrets.")
+        print("==================================================================")
+        exit(1)
+    return api_key
+
+
+def read_topics_queue() -> tuple[list[str], str, list[str]]:
+    """
+    Read the manual topics queue from topics.txt.
+    Returns:
+        tuple: (all_topics, current_topic, remaining_topics)
+    """
+    if os.path.exists(TOPICS_FILE):
+        with open(TOPICS_FILE, "r", encoding="utf-8") as f:
+            topics = [line.strip() for line in f if line.strip()]
+    else:
+        topics = []
+        
+    if topics:
+        topic = topics[0]
+        remaining = topics[1:]
+        print(f"Mode: Manual Queue -> Picked topic: '{topic}'")
+        return topics, topic, remaining
+    return [], "", []
+
+
+def get_autopilot_prompt(done_topics_file: str) -> str:
+    """
+    Construct the prompt for generating a new topic when the queue is empty.
+    Avoids duplicate topics by referencing done_topics_file history.
+    """
     past_topics = []
-    if os.path.exists(DONE_TOPICS_FILE):
-        with open(DONE_TOPICS_FILE, "r", encoding="utf-8") as f:
+    if os.path.exists(done_topics_file):
+        with open(done_topics_file, "r", encoding="utf-8") as f:
             past_topics = [line.strip() for line in f if line.strip()]
-    
-    # ดึงหัวขอล่าสุดสูงสุด 15 หัวข้อ เพื่อเป็นบริบทและแนวทางให้ AI
+            
+    # Include up to 15 recent topics for context
     past_topics_context = "\n".join(past_topics[-15:])
     
-    niche_prompt = f"""
+    return f"""
 คุณคือหัวหน้าบรรณาธิการของบล็อกเทคโนโลยี "Antigravity TechLab"
 บล็อกนี้มีกลุ่มเป้าหมายเฉพาะทาง (Niche Blog) ที่เน้นเขียนบทความเจาะลึกด้านเทคนิคเกี่ยวกับ:
 1. การปรับแต่งระบบปฏิบัติการ Windows (Windows Registry, Services, Debloating)
@@ -71,27 +90,11 @@ else:
 - ตอบกลับมาเฉพาะชื่อหัวข้อภาษาไทย 1 บรรทัดสั้นๆ เท่านั้น
 - ห้ามมีคำอธิบาย เกริ่นนำ ทักทาย หรือลงท้ายใดๆ ทั้งสิ้น
 """
-    topic_response = model.generate_content(niche_prompt)
-    topic = topic_response.text.strip().replace('"', '').replace("'", "")
-    print(f"Generated new topic: '{topic}'")
 
-# 2. ให้ Gemini เจนเนอเรต URL Slug จากหัวข้อภาษาไทย
-print("Generating URL Slug...")
-slug_prompt = f"""
-จงแปลงหัวข้อภาษาไทยนี้ให้เป็น URL slug ภาษาอังกฤษสั้นๆ ที่เหมาะสม
-ข้อกำหนด:
-- ใช้ตัวพิมพ์เล็กทั้งหมด
-- คั่นระหว่างคำด้วยเครื่องหมายขีดกลาง (-) เท่านั้น
-- ห้ามตอบคำอื่นนอกจาก slug ที่ได้ (เช่น 'windows-dns-lag-fix')
-หัวข้อ: "{topic}"
-"""
-slug_response = model.generate_content(slug_prompt)
-slug = slug_response.text.strip().replace(" ", "-").replace('"', "").replace("'", "").lower()
-print(f"Generated Slug: {slug}")
 
-# 3. ให้ Gemini เจนเนอเรตเนื้อหาบทความเชิงลึก
-print("Generating article content using Gemini...")
-prompt = f"""
+def generate_article_prompt(topic: str) -> str:
+    """Construct the main prompt for writing the full technical article."""
+    return f"""
 คุณคือผู้เชี่ยวชาญด้าน System Architecture, Network Optimization และ Game Server Developer
 หน้าที่ของคุณคือเขียนบทความบล็อกเชิงลึกแบบมืออาชีพในหัวข้อ: "{topic}"
 
@@ -108,14 +111,14 @@ prompt = f"""
    - ในส่วนท้ายของบทความ หรือระหว่างเนื้อหาที่เหมาะสม ให้สอดแทรกคำแนะนำอุปกรณ์คอมพิวเตอร์ ฮาร์ดแวร์ หรือเครื่องมือที่เกี่ยวข้องและช่วยเพิ่มประสิทธิภาพได้จริงตามหัวข้อนั้นๆ อย่างเป็นธรรมชาติ (เช่น สาย LAN คุณภาพสูง, อุปกรณ์ช่วยระบายความร้อน, Router Gaming เป็นต้น)
    - ให้แนบลิงก์จำลอง (Affiliate Link Placeholder) สำหรับสั่งซื้อสินค้านั้นๆ เพื่อให้ผู้อ่านคลิกไปชมสินค้าได้ โดยใช้รูปแบบลิงก์ของ Shopee/Lazada หรือ Amazon ในรูปแบบ Markdown: `[ดูรายละเอียดอุปกรณ์หรือสั่งซื้อได้ที่นี่](https://shopee.co.th/search?keyword=...)`
 """
-response = model.generate_content(prompt)
-content = response.text
 
-# 4. จัดการโครงสร้างไฟล์และ Front Matter
-date_str = datetime.datetime.now().strftime("%Y-%m-%d")
-filename = f"content/posts/{date_str}-{slug}.md"
 
-front_matter = f"""---
+def save_article_file(topic: str, content: str, slug: str) -> str:
+    """Save front matter and article body to a Hugo content markdown file."""
+    date_str = datetime.datetime.now().strftime("%Y-%m-%d")
+    filename = f"content/posts/{date_str}-{slug}.md"
+    
+    front_matter = f"""---
 title: "{topic}"
 date: {datetime.datetime.now().astimezone().isoformat()}
 tags: ["Optimization", "Tech"]
@@ -123,57 +126,114 @@ draft: false
 ---
 
 """
+    os.makedirs("content/posts", exist_ok=True)
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(front_matter + content)
+    return filename
 
-os.makedirs("content/posts", exist_ok=True)
-with open(filename, "w", encoding="utf-8") as f:
-    f.write(front_matter + content)
 
-print(f"Success! Article written to {filename}")
-
-# 5. บันทึกประวัติและอัปเดตไฟล์คิว
-with open(DONE_TOPICS_FILE, "a", encoding="utf-8") as f:
-    f.write(topic + "\n")
-
-# อัปเดตไฟล์คิวกรณีที่มีคิวรันอยู่
-if topics:
-    with open(TOPICS_FILE, "w", encoding="utf-8") as f:
-        for t in remaining_topics:
-            f.write(t + "\n")
-    print(f"Updated queue in {TOPICS_FILE}")
-else:
-    # เคลียร์ไฟล์ topics.txt ให้ว่างเปล่าเพื่อรอรับคิวถัดไปถ้ามีการใส่ข้อมูลเพิ่ม
-    if os.path.exists(TOPICS_FILE):
+def update_queues(topic: str, remaining_topics: list[str], topics_exist: bool):
+    """Log the completed topic and refresh queue files."""
+    # Write to done history
+    with open(DONE_TOPICS_FILE, "a", encoding="utf-8") as f:
+        f.write(topic + "\n")
+        
+    # Update topics queue
+    if topics_exist:
         with open(TOPICS_FILE, "w", encoding="utf-8") as f:
-            pass
+            for t in remaining_topics:
+                f.write(t + "\n")
+        print(f"Updated manual queue queue in {TOPICS_FILE}")
+    else:
+        # Clear queue file to stay ready for new manual entry
+        if os.path.exists(TOPICS_FILE):
+            with open(TOPICS_FILE, "w", encoding="utf-8") as f:
+                pass
+    print(f"Logged completed topic to {DONE_TOPICS_FILE}")
 
-print(f"Logged completed topic to {DONE_TOPICS_FILE}")
 
-# 6. Git Automation
-if os.environ.get("GITHUB_ACTIONS") == "true":
-    print("Running on GitHub Actions. Skipping Python Git Automation to let YAML workflow handle commit and push.")
-else:
+def run_git_automation(filename: str):
+    """Handle Git operations for local workflow runs."""
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        print("Running on GitHub Actions. Skipping Python Git Automation to let YAML handle it.")
+        return
+        
     try:
-        print("Starting Git tracking...")
+        print("Initializing Git local repository tracking...")
         repo = Repo(".")
         
-        # Add generated file and commit
+        # Add generated files
         repo.git.add(filename)
         if os.path.exists(TOPICS_FILE):
             repo.git.add(TOPICS_FILE)
         if os.path.exists(DONE_TOPICS_FILE):
             repo.git.add(DONE_TOPICS_FILE)
             
-        commit_message = f"Feat: auto-generate post - {topic}"
-        repo.index.commit(commit_message)
-        print(f"Committed changes locally with message: '{commit_message}'")
+        commit_msg = f"Feat: auto-generate post - {filename.split('/')[-1]}"
+        repo.index.commit(commit_msg)
+        print(f"Local commit successful: '{commit_msg}'")
         
-        # Check if remote repository exists
+        # Push to remote repository
         if repo.remotes:
-            print("Pushing changes to remote repository...")
+            print("Pushing commits to remote origin branch...")
             origin = repo.remote(name="origin")
             origin.push()
-            print("Success! Pushed to remote repository.")
+            print("Successfully pushed to remote!")
         else:
-            print("Notice: No remote 'origin' detected. Changes were committed locally.")
+            print("Notice: No remote origin detected. Changes saved locally.")
     except Exception as e:
         print(f"Git automation encountered an error: {e}")
+
+
+def main():
+    log_banner("🚀 Starting Antigravity AutoTech Blogger Engine 🚀")
+    
+    # 1. Authorize Gemini API
+    api_key = load_api_key()
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel('gemini-3.5-flash')
+    
+    # 2. Pick Niche Topic
+    topics, topic, remaining = read_topics_queue()
+    if not topic:
+        print("Mode: Auto-Pilot -> Queue empty. AI editor will generate a new topic.")
+        niche_prompt = get_autopilot_prompt(DONE_TOPICS_FILE)
+        topic_response = model.generate_content(niche_prompt)
+        topic = topic_response.text.strip().replace('"', '').replace("'", "")
+        print(f"Generated new topic: '{topic}'")
+        
+    # 3. Generate URL English Slug
+    print("Generating SEO URL slug...")
+    slug_prompt = f"""
+    จงแปลงหัวข้อภาษาไทยนี้ให้เป็น URL slug ภาษาอังกฤษสั้นๆ ที่เหมาะสม
+    ข้อกำหนด:
+    - ใช้ตัวพิมพ์เล็กทั้งหมด
+    - คั่นระหว่างคำด้วยเครื่องหมายขีดกลาง (-) เท่านั้น
+    - ห้ามตอบคำอื่นนอกจาก slug ที่ได้ (เช่น 'windows-dns-lag-fix')
+    หัวข้อ: "{topic}"
+    """
+    slug_response = model.generate_content(slug_prompt)
+    slug = slug_response.text.strip().replace(" ", "-").replace('"', "").replace("'", "").lower()
+    print(f"Slug: {slug}")
+    
+    # 4. Generate Content Article
+    print("Generating comprehensive article body...")
+    article_prompt = generate_article_prompt(topic)
+    response = model.generate_content(article_prompt)
+    content = response.text
+    
+    # 5. Write to File
+    filename = save_article_file(topic, content, slug)
+    print(f"Successfully generated file: {filename}")
+    
+    # 6. Update History and Queues
+    update_queues(topic, remaining, bool(topics))
+    
+    # 7. Run Git updates
+    run_git_automation(filename)
+    
+    log_banner("🎉 Process Completed Successfully 🎉")
+
+
+if __name__ == "__main__":
+    main()
