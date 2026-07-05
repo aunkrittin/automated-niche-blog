@@ -1,0 +1,75 @@
+# Workflow สำหรับสร้างและดีพลอย Hugo เว็บไซต์ไปยัง GitHub Pages อัตโนมัติ
+name: Deploy Hugo site to Pages
+
+on:
+  # รันเมื่อมีการ Push โค้ดขึ้นไปที่ branch master
+  push:
+    branches:
+      - master
+
+  # เปิดปุ่มให้สามารถสั่งรันหน้าเว็บได้แมนนวลจากแท็บ Actions บน GitHub
+  workflow_dispatch:
+
+# ตั้งสิทธิ์ของ GITHUB_TOKEN สำหรับการเข้าถึงและดีพลอย
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# ป้องกันไม่ให้การดีพลอยทำงานทับซ้อนกัน
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # ขั้นตอนการ Build
+  build:
+    runs-on: ubuntu-latest
+    env:
+      HUGO_VERSION: 0.148.0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install Hugo CLI
+        run: |
+          wget -O ${{ runner.temp }}/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${{ env.HUGO_VERSION }}/hugo_extended_${{ env.HUGO_VERSION }}_linux-amd64.deb
+          sudo dpkg -i ${{ runner.temp }}/hugo.deb
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build with Hugo
+        env:
+          HUGO_CACHEDIR: ${{ runner.temp }}/hugo_cache
+          HUGO_ENV: production
+        run: |
+          ./hugo \
+            --gc \
+            --minify \
+            --baseURL "${{ steps.pages.outputs.base_url }}/"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+  # ขั้นตอนการ Deploy
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
