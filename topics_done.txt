@@ -6,3 +6,4 @@
 ไขความลับ Virtual Memory: ปรับแต่ง Pagefile และ Memory Compression เพื่อการจัดการ RAM ขั้นสูงสำหรับเกมเมอร์
 ปรับแต่ง Network Adapter ขั้นสูง: จูน RSS, Interrupt Moderation และ Packet Coalescing เพื่อลด Latency ระดับฮาร์ดแวร์
 เจาะลึกระบบ MSI (Message Signaled Interrupts): ปรับแต่งการขัดจังหวะฮาร์ดแวร์เพื่อลด Latency และเพิ่มความเสถียรของเฟรมเรต
+จัดการ Memory Standby List: จูนระบบแคชแรมอัจฉริยะเพื่อแก้ปัญหา Micro-Stuttering ในเกม
