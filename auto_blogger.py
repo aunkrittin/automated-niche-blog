@@ -4,7 +4,20 @@ import google.generativeai as genai
 from git import Repo
 
 # ตั้งค่า API Key (ดึงจาก Environment Variable เพื่อความปลอดภัย)
-API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_API_KEY_HERE")
+API_KEY = os.environ.get("GEMINI_API_KEY", "")
+if not API_KEY or API_KEY == "YOUR_API_KEY_HERE":
+    # ลองหาคีย์จากตัวแปร GOOGLE_API_KEY เผื่อไว้
+    API_KEY = os.environ.get("GOOGLE_API_KEY", "")
+
+# ตรวจสอบความถูกต้องของ API Key และให้คำแนะนำการแก้ไข
+if not API_KEY:
+    print("==================================================================")
+    print("❌ ERROR: ไม่พบ API Key ของ Gemini ในระบบ!")
+    print("กรุณาตรวจสอบว่าคุณได้สร้าง 'Repository Secret' ชื่อ 'GEMINI_API_KEY'")
+    print("ในแท็บ Settings ของ GitHub เรียบร้อยแล้ว")
+    print("==================================================================")
+    exit(1)
+
 genai.configure(api_key=API_KEY)
 
 # ไฟล์ระบบ Content Plan
