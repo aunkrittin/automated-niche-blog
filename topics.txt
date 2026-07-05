@@ -1,0 +1,2 @@
+เจาะลึกระบบ Windows Virtual Memory: ตั้งค่า Pagefile อย่างไรให้เกมไม่กระตุก
+สคริปต์ลบ Bloatware บน Windows 11 เพื่อประหยัด RAM และ CPU สำหรับเครื่องสเปกจำกัด
