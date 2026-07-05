@@ -4,3 +4,4 @@
 ถอดรหัส Windows Services: จัดการ Dependencies และ Trigger-Start เพื่อประสิทธิภาพสูงสุดและลดภาระระบบอย่างปลอดภัย
 เปิดเผยความลับ System Timer: จูนความละเอียดนาฬิการะบบเพื่อลด Input Lag และ Frame Time Jitter
 ไขความลับ Virtual Memory: ปรับแต่ง Pagefile และ Memory Compression เพื่อการจัดการ RAM ขั้นสูงสำหรับเกมเมอร์
+ปรับแต่ง Network Adapter ขั้นสูง: จูน RSS, Interrupt Moderation และ Packet Coalescing เพื่อลด Latency ระดับฮาร์ดแวร์
