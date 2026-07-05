@@ -1,0 +1,329 @@
+{{- define "main" }}
+
+{{- if (and site.Params.profileMode.enabled .IsHome) }}
+{{- partial "index_profile.html" . }}
+{{- else }} {{/* if not profileMode */}}
+
+{{- if not .IsHome | and .Title }}
+<header class="page-header">
+  {{- partial "breadcrumbs.html" . }}
+  <h1>
+    {{ .Title }}
+    {{- if and (or (eq .Kind `term`) (eq .Kind `section`)) (.Param "ShowRssButtonInSectionTermList") }}
+    {{- with .OutputFormats.Get "rss" }}
+    <a href="{{ .RelPermalink }}" title="RSS" aria-label="RSS">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" height="23">
+        <path d="M4 11a9 9 0 0 1 9 9" />
+        <path d="M4 4a16 16 0 0 1 16 16" />
+        <circle cx="5" cy="19" r="1" />
+      </svg>
+    </a>
+    {{- end }}
+    {{- end }}
+  </h1>
+  {{- if .Description }}
+  <div class="post-description">
+    {{ .Description | markdownify }}
+  </div>
+  {{- end }}
+</header>
+{{- end }}
+
+{{- if .Content }}
+<div class="post-content md-content">
+  {{- if not (.Param "disableAnchoredHeadings") }}
+  {{- partial "anchored_headings.html" .Content -}}
+  {{- else }}{{ .Content }}{{ end }}
+</div>
+{{- end }}
+
+{{- $pages := union .RegularPages .Sections }}
+
+{{- if .IsHome }}
+  {{- $pages = where site.RegularPages "Type" "in" site.Params.mainSections }}
+  {{- $pages = where $pages "Params.hiddenInHomeList" "!=" "true"  }}
+{{- end }}
+
+<!-- ส่วนการแสดงผล Filter & Sort (จะเรนเดอร์เฉพาะในหน้ารวมบทความย่อย /posts/ เพื่อความเป็นระเบียบและ UX ที่ยอดเยี่ยม) -->
+{{- if not .IsHome }}
+<div class="blog-controls">
+  <div class="search-box-wrapper">
+    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <input type="text" id="live-search-input" placeholder="ค้นหาบทความด้วยคำค้น..." aria-label="Search posts">
+  </div>
+
+  <div class="filter-actions">
+    <div class="sort-selector-wrapper">
+      <label for="post-sort-select">⚡ เรียงลำดับ:</label>
+      <select id="post-sort-select" aria-label="Sort posts">
+        <option value="date-desc">ล่าสุด 📅</option>
+        <option value="date-asc">เก่าที่สุด ⏳</option>
+        <option value="readtime-desc">เวลาอ่าน: นานที่สุด 📖</option>
+        <option value="readtime-asc">เวลาอ่าน: เร็วที่สุด ⚡</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- หมวดหมู่แท็กด่วน (Quick Tag Filtering) -->
+  <div class="tag-quick-filters">
+    <span class="tag-label">🏷️ แท็กด่วน:</span>
+    <button class="tag-filter-btn active" data-tag="all">ทั้งหมด</button>
+    {{- range site.Taxonomies.tags }}
+    <button class="tag-filter-btn" data-tag="{{ .Page.Title | lower }}">{{ .Page.Title }} ({{ .Count }})</button>
+    {{- end }}
+  </div>
+</div>
+
+<style>
+  .blog-controls {
+    background: linear-gradient(145deg, #1d1d1f, #141416);
+    border: 1px solid rgba(57, 255, 20, 0.15);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+  .search-box-wrapper {
+    position: relative;
+    margin-bottom: 15px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+  }
+  #live-search-input {
+    width: 100%;
+    padding: 12px 12px 12px 42px;
+    background: #0d0d0f;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 15px;
+    transition: all 0.3s ease;
+  }
+  #live-search-input:focus {
+    border-color: #39FF14;
+    outline: none;
+    box-shadow: 0 0 8px rgba(57, 255, 20, 0.3);
+  }
+  .filter-actions {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  .sort-selector-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #bbb;
+  }
+  #post-sort-select {
+    padding: 8px 12px;
+    background: #0d0d0f;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    transition: border-color 0.2s;
+  }
+  #post-sort-select:focus {
+    border-color: #39FF14;
+    outline: none;
+  }
+  .tag-quick-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    border-top: 1px solid #222;
+    padding-top: 15px;
+  }
+  .tag-label {
+    color: #888;
+    margin-right: 5px;
+  }
+  .tag-filter-btn {
+    padding: 4px 10px;
+    background: #141416;
+    border: 1px solid #333;
+    border-radius: 20px;
+    color: #bbb;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .tag-filter-btn:hover {
+    border-color: #39FF14;
+    color: #fff;
+  }
+  .tag-filter-btn.active {
+    background: rgba(57, 255, 20, 0.15);
+    border-color: #39FF14;
+    color: #39FF14;
+    font-weight: 500;
+  }
+  .post-entry-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: all 0.5s ease;
+  }
+  /* Animation class for filter and sort sorting visual effects */
+  article.post-entry {
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  article.post-entry.hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    position: absolute;
+    pointer-events: none;
+    visibility: hidden;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+</style>
+{{- end }}
+
+<!-- คอนเทนเนอร์หลักสำหรับเก็บและจัดเรียงบทความ -->
+<div class="post-entry-wrapper" id="posts-container">
+  {{- $term := .Data.Term }}
+  
+  <!-- แสดงบทความทั้งหมดหน้าเดียว (ไม่ใช้ pagination) เพื่อให้ JavaScript สามารถทำการ Filter & Sort ได้ครบทั้งระบบบล็อก -->
+  {{- range $index, $page := $pages }}
+  
+  {{- $class := "post-entry" }}
+  {{- $user_preferred := or site.Params.disableSpecial1stPost site.Params.homeInfoParams }}
+  {{- if (and $.IsHome (eq $index 0) (not $user_preferred)) }}
+  {{- $class = "first-entry" }}
+  {{- else if $term }}
+  {{- $class = "post-entry tag-entry" }}
+  {{- end }}
+  
+  <!-- บรรจุข้อมูล Metadata ใน data-* attributes สำหรับให้ JavaScript นำไปใช้คัดกรองจัดเรียงสด -->
+  <article class="{{ $class }}" 
+           data-date="{{ $page.Date.Unix }}" 
+           data-title="{{ $page.Title | lower }}" 
+           data-tags="{{ delimit $page.Params.tags "," | lower }}"
+           data-readtime="{{ $page.ReadingTime }}">
+           
+    {{- $isHidden := ($page.Param "cover.hiddenInList") | default ($page.Param "cover.hidden") | default false }}
+    {{- partial "cover.html" (dict "cxt" $page "IsSingle" false "isHidden" $isHidden) }}
+    <header class="entry-header">
+      <h2 class="entry-hint-parent">
+        {{- $page.Title }}
+        {{- if $page.Draft }}
+        <span class="entry-hint" title="Draft">
+          <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" fill="currentColor">
+            <path d="M160-410v-60h300v60H160Zm0-165v-60h470v60H160Zm0-165v-60h470v60H160Zm360 580v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q9 9 13 20t4 22q0 11-4.5 22.5T862.09-380L643-160H520Zm300-263-37-37 37 37ZM580-220h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z" />
+          </svg>
+        </span>
+        {{- end }}
+      </h2>
+    </header>
+    {{- if (ne ($page.Param "hideSummary") true) }}
+    <div class="entry-content">
+      <p>{{ $page.Summary | plainify | htmlUnescape }}{{ if $page.Truncated }}...{{ end }}</p>
+    </div>
+    {{- end }}
+    {{- if not ($page.Param "hideMeta") }}
+    <footer class="entry-footer">
+      {{- partial "post_meta.html" $page -}}
+    </footer>
+    {{- end }}
+    <a class="entry-link" aria-label="post link to {{ $page.Title | plainify }}" href="{{ $page.Permalink }}"></a>
+  </article>
+  {{- end }}
+</div>
+
+<!-- JavaScript ในการประมวลผลการค้นหา กรองคำ และจัดเรียงลำดับสดบนเบราว์เซอร์ -->
+{{- if not .IsHome }}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.getElementById("posts-container");
+  const posts = Array.from(container.getElementsByClassName("post-entry"));
+  
+  const searchInput = document.getElementById("live-search-input");
+  const sortSelect = document.getElementById("post-sort-select");
+  const tagButtons = document.querySelectorAll(".tag-filter-btn");
+
+  let currentSearch = "";
+  let currentTag = "all";
+
+  // 1. ฟังก์ชันกรองโพสต์ (Filter)
+  function filterPosts() {
+    posts.forEach(post => {
+      const title = post.getAttribute("data-title") || "";
+      const tags = post.getAttribute("data-tags") || "";
+
+      const matchesSearch = title.includes(currentSearch);
+      const matchesTag = currentTag === "all" || tags.split(",").includes(currentTag);
+
+      if (matchesSearch && matchesTag) {
+        post.classList.remove("hidden");
+      } else {
+        post.classList.add("hidden");
+      }
+    });
+  }
+
+  // 2. ฟังก์ชันเรียงลำดับโพสต์ (Sort)
+  function sortPosts() {
+    const sortBy = sortSelect.value;
+
+    const sortedPosts = posts.sort((a, b) => {
+      if (sortBy === "date-desc") {
+        return parseInt(b.getAttribute("data-date")) - parseInt(a.getAttribute("data-date"));
+      } else if (sortBy === "date-asc") {
+        return parseInt(a.getAttribute("data-date")) - parseInt(b.getAttribute("data-date"));
+      } else if (sortBy === "readtime-desc") {
+        return parseInt(b.getAttribute("data-readtime")) - parseInt(a.getAttribute("data-readtime"));
+      } else if (sortBy === "readtime-asc") {
+        return parseInt(a.getAttribute("data-readtime")) - parseInt(b.getAttribute("data-readtime"));
+      }
+      return 0;
+    });
+
+    // แนบ DOM nodes ที่เรียงเสร็จแล้วกลับเข้า container
+    sortedPosts.forEach(post => container.appendChild(post));
+  }
+
+  // 3. แนบ Event Listener สำหรับ Live Search (กรองตัวหนังสือสด)
+  searchInput.addEventListener("input", (e) => {
+    currentSearch = e.target.value.toLowerCase().trim();
+    filterPosts();
+  });
+
+  // 4. แนบ Event Listener สำหรับ Sort (เรียงลำดับคอมโบ)
+  sortSelect.addEventListener("change", () => {
+    sortPosts();
+  });
+
+  // 5. แนบ Event Listener สำหรับ แท็กด่วน (Tag buttons)
+  tagButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tagButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      
+      currentTag = btn.getAttribute("data-tag");
+      filterPosts();
+    });
+  });
+
+  // ตั้งค่าเริ่มต้นของการจัดเรียงตอนโหลดหน้า
+  sortPosts();
+});
+</script>
+{{- end }}
+
+{{- end }}{{/* end profileMode */}}
+
+{{- end }}{{- /* end main */ -}}
