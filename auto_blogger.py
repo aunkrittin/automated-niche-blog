@@ -133,28 +133,31 @@ else:
 print(f"Logged completed topic to {DONE_TOPICS_FILE}")
 
 # 6. Git Automation
-try:
-    print("Starting Git tracking...")
-    repo = Repo(".")
-    
-    # Add generated file and commit
-    repo.git.add(filename)
-    if os.path.exists(TOPICS_FILE):
-        repo.git.add(TOPICS_FILE)
-    if os.path.exists(DONE_TOPICS_FILE):
-        repo.git.add(DONE_TOPICS_FILE)
+if os.environ.get("GITHUB_ACTIONS") == "true":
+    print("Running on GitHub Actions. Skipping Python Git Automation to let YAML workflow handle commit and push.")
+else:
+    try:
+        print("Starting Git tracking...")
+        repo = Repo(".")
         
-    commit_message = f"Feat: auto-generate post - {topic}"
-    repo.index.commit(commit_message)
-    print(f"Committed changes locally with message: '{commit_message}'")
-    
-    # Check if remote repository exists
-    if repo.remotes:
-        print("Pushing changes to remote repository...")
-        origin = repo.remote(name="origin")
-        origin.push()
-        print("Success! Pushed to remote repository.")
-    else:
-        print("Notice: No remote 'origin' detected. Changes were committed locally.")
-except Exception as e:
-    print(f"Git automation encountered an error: {e}")
+        # Add generated file and commit
+        repo.git.add(filename)
+        if os.path.exists(TOPICS_FILE):
+            repo.git.add(TOPICS_FILE)
+        if os.path.exists(DONE_TOPICS_FILE):
+            repo.git.add(DONE_TOPICS_FILE)
+            
+        commit_message = f"Feat: auto-generate post - {topic}"
+        repo.index.commit(commit_message)
+        print(f"Committed changes locally with message: '{commit_message}'")
+        
+        # Check if remote repository exists
+        if repo.remotes:
+            print("Pushing changes to remote repository...")
+            origin = repo.remote(name="origin")
+            origin.push()
+            print("Success! Pushed to remote repository.")
+        else:
+            print("Notice: No remote 'origin' detected. Changes were committed locally.")
+    except Exception as e:
+        print(f"Git automation encountered an error: {e}")
