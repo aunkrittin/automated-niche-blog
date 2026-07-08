@@ -9,3 +9,4 @@
 จัดการ Memory Standby List: จูนระบบแคชแรมอัจฉริยะเพื่อแก้ปัญหา Micro-Stuttering ในเกม
 ไขความลับ Multi-Plane Overlay (MPO): ปรับแต่งระบบเรนเดอร์ Windows เพื่อลด Input Lag และแก้ปัญหาเฟรมตกขณะเล่นเกมโหมด Windowed
 เจาะลึก Windows Multimedia Class Scheduler (MMCSS): ปรับแต่งระบบจัดสรรลำดับความสำคัญ CPU และ Network สำหรับเกมเมอร์และสตรีมเมอร์
+ไขความลับ Win32PrioritySeparation: ปรับแต่ง CPU Quantum เพื่อจัดสรรเวลาประมวลผลให้เกมและโปรแกรมสตรีมอย่างมีประสิทธิภาพสูงสุด
