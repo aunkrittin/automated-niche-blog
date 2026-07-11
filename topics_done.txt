@@ -12,3 +12,4 @@
 ไขความลับ Win32PrioritySeparation: ปรับแต่ง CPU Quantum เพื่อจัดสรรเวลาประมวลผลให้เกมและโปรแกรมสตรีมอย่างมีประสิทธิภาพสูงสุด
 ถอดรหัสระบบไฟล์ NTFS: ปรับแต่ง 8dot3 Name, Last Access และ Disk Cache Buffer เพื่อลด Disk Latency และแก้ปัญหาเฟรมร่วงขณะโหลด Asset ในเกม
 ถอดรหัส Hardware-Accelerated GPU Scheduling (HAGS): วิเคราะห์การจัดสรรคิว VRAM เพื่อลดภาระ CPU และเพิ่มประสิทธิภาพเฟรมเรต
+เจาะลึก Windows QoS และ DSCP Packet Tagging: จัดลำดับความสำคัญทราฟฟิกเครือข่ายระดับนโยบายเพื่อสตรีมและเล่นเกมโดยไร้อาการปิงแกว่ง
