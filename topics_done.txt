@@ -13,3 +13,4 @@
 ถอดรหัสระบบไฟล์ NTFS: ปรับแต่ง 8dot3 Name, Last Access และ Disk Cache Buffer เพื่อลด Disk Latency และแก้ปัญหาเฟรมร่วงขณะโหลด Asset ในเกม
 ถอดรหัส Hardware-Accelerated GPU Scheduling (HAGS): วิเคราะห์การจัดสรรคิว VRAM เพื่อลดภาระ CPU และเพิ่มประสิทธิภาพเฟรมเรต
 เจาะลึก Windows QoS และ DSCP Packet Tagging: จัดลำดับความสำคัญทราฟฟิกเครือข่ายระดับนโยบายเพื่อสตรีมและเล่นเกมโดยไร้อาการปิงแกว่ง
+ถอดรหัส TCP Congestion Control ใน Windows: ปรับแต่งระบบ CUBIC และ BBR เพื่อเพิ่มเสถียรภาพเครือข่ายและลด Latency ขั้นสุด
