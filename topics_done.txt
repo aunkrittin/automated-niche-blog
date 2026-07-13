@@ -14,3 +14,4 @@
 ถอดรหัส Hardware-Accelerated GPU Scheduling (HAGS): วิเคราะห์การจัดสรรคิว VRAM เพื่อลดภาระ CPU และเพิ่มประสิทธิภาพเฟรมเรต
 เจาะลึก Windows QoS และ DSCP Packet Tagging: จัดลำดับความสำคัญทราฟฟิกเครือข่ายระดับนโยบายเพื่อสตรีมและเล่นเกมโดยไร้อาการปิงแกว่ง
 ถอดรหัส TCP Congestion Control ใน Windows: ปรับแต่งระบบ CUBIC และ BBR เพื่อเพิ่มเสถียรภาพเครือข่ายและลด Latency ขั้นสุด
+ถอดรหัส Nagles Algorithm: ปรับแต่ง TcpAckFrequency และ TCPNoDelay ใน Windows Registry เพื่อลด Latency ในเกมออนไลน์ขั้นสุด
