@@ -18,3 +18,4 @@
 เจาะลึก CPU Core Parking และ Thread Affinity: จัดสรรการประมวลผลของคอร์เพื่อลด Frame Time Jitter และรีดเฟรมเรตเกมให้เสถียรขั้นสุด
 เจาะลึกระบบ DPC และ ISR: วิเคราะห์และจัดการไดรเวอร์ที่หน่วงระบบเพื่อลด Latency และขจัดอาการเฟรมสะดุดอย่างเด็ดขาด
 เจาะลึก Energy Performance Preference (EPP): ปรับแต่งการตอบสนองคอร์ CPU เพื่อขจัด Micro-Stuttering และลด Latency ขั้นสุด
+ไขความลับ Windows Timer Resolution และ HPET: ปรับแต่งระบบเวลาเพื่อลด Input Lag และเพิ่มความเสถียรของเฟรมเรตขั้นสุด
