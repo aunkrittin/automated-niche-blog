@@ -20,3 +20,4 @@
 เจาะลึก Energy Performance Preference (EPP): ปรับแต่งการตอบสนองคอร์ CPU เพื่อขจัด Micro-Stuttering และลด Latency ขั้นสุด
 ไขความลับ Windows Timer Resolution และ HPET: ปรับแต่งระบบเวลาเพื่อลด Input Lag และเพิ่มความเสถียรของเฟรมเรตขั้นสุด
 ถอดรหัส TCP Receive Window (RWIN) Auto-Tuning: ปรับแต่งระบบคำนวณบัฟเฟอร์เครือข่ายเพื่อลดค่า Latency และแก้ปัญหาปิงแกว่ง
+ถอดรหัส Receive Side Scaling (RSS) และ Receive Segment Coalescing (RSC): จัดสรรคอร์ CPU ประมวลผลแพ็กเก็ตเน็ตเวิร์กเพื่อลด Latency และป้องกัน Packet Loss ขั้นสุด
