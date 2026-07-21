@@ -22,3 +22,4 @@
 ถอดรหัส TCP Receive Window (RWIN) Auto-Tuning: ปรับแต่งระบบคำนวณบัฟเฟอร์เครือข่ายเพื่อลดค่า Latency และแก้ปัญหาปิงแกว่ง
 ถอดรหัส Receive Side Scaling (RSS) และ Receive Segment Coalescing (RSC): จัดสรรคอร์ CPU ประมวลผลแพ็กเก็ตเน็ตเวิร์กเพื่อลด Latency และป้องกัน Packet Loss ขั้นสุด
 เจาะลึก Windows Exploit Protection และ Control Flow Guard (CFG): ปรับแต่งระบบความปลอดภัยเพื่อลดอาการ Micro-Stuttering ในเกม DX12
+เจาะลึก Virtualization-Based Security (VBS) และ Memory Integrity: วิเคราะห์ผลกระทบด้านประสิทธิภาพเพื่อปรับแต่งระบบความปลอดภัยและทวงคืนเฟรมเรตขั้นสุด
