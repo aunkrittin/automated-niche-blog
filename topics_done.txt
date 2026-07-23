@@ -24,3 +24,4 @@
 เจาะลึก Windows Exploit Protection และ Control Flow Guard (CFG): ปรับแต่งระบบความปลอดภัยเพื่อลดอาการ Micro-Stuttering ในเกม DX12
 เจาะลึก Virtualization-Based Security (VBS) และ Memory Integrity: วิเคราะห์ผลกระทบด้านประสิทธิภาพเพื่อปรับแต่งระบบความปลอดภัยและทวงคืนเฟรมเรตขั้นสุด
 เจาะลึก Message Signaled Interrupts (MSI/MSI-X): ปรับแต่งระบบประมวลผลสัญญาณขัดจังหวะของฮาร์ดแวร์เพื่อลด Input Lag และขจัดอาการเฟรมสะดุดขั้นสุด
+ถอดรหัส Multimedia Class Scheduler (MMCSS): ปรับแต่ง NetworkThrottlingIndex เพื่อขจัดปัญหาปิงแกว่งและเฟรมร่วงขณะสตรีมเกม
